@@ -39,6 +39,14 @@ export function buildApp(options: BuildAppOptions): FastifyInstance {
   // Tighten this (an explicit allowlist) before any non-local deployment.
   app.register(cors, { origin: true });
 
+  // Every response here is dynamic and learner-specific (or, for CORS preflight/reflected
+  // headers, request-specific) — caching any of it, in the browser or an intermediary, risks
+  // serving one learner's data, or one origin's CORS headers, back for a different request.
+  app.addHook("onSend", async (_request, reply, payload) => {
+    reply.header("Cache-Control", "no-store");
+    return payload;
+  });
+
   app.decorate("learnerService", new LearnerService(options.db));
   app.decorate("eventService", new EventService(options.db));
   app.decorate("analysisService", new AnalysisService(options.provider));
