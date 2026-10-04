@@ -46,4 +46,24 @@ export class LearnerService {
     const row = this.db.prepare(`SELECT * FROM learners WHERE id = ?`).get(id) as LearnerRow | undefined;
     return row ? rowToLearner(row) : null;
   }
+
+  /**
+   * Returns the learner with this exact id, creating one if it doesn't exist yet.
+   * Used by client-driven ingestion (e.g. a game that generates and persists its
+   * own anonymous learner id locally, then starts sending events for it without
+   * ever calling `POST /learners` first).
+   */
+  ensureLearner(id: string): Learner {
+    const existing = this.getLearner(id);
+    if (existing) return existing;
+
+    const now = new Date().toISOString();
+    const learner: Learner = { id, createdAt: now, updatedAt: now };
+
+    this.db
+      .prepare(`INSERT INTO learners (id, display_name, age, created_at, updated_at) VALUES (?, ?, ?, ?, ?)`)
+      .run(learner.id, null, null, learner.createdAt, learner.updatedAt);
+
+    return learner;
+  }
 }

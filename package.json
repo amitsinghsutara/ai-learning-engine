@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "dev": "tsx watch apps/api/src/server.ts",
-    "build": "tsup apps/api/src/server.ts --format esm --platform node --target node20 --out-dir apps/api/dist --clean",
+    "build": "tsup apps/api/src/server.ts --format esm --platform node --target node20 --out-dir apps/api/dist --clean --external fastify --external @fastify/cors --external zod --external zod-to-json-schema --external dotenv",
     "start": "node apps/api/dist/server.js",
     "test": "vitest run",
     "test:watch": "vitest",

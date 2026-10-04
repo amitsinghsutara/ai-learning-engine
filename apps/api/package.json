@@ -8,6 +8,7 @@
     "@ale/ai": "*",
     "@ale/learning-engine": "*",
     "@ale/shared": "*",
+    "@fastify/cors": "^10.0.1",
     "dotenv": "^16.4.5",
     "fastify": "^5.1.0",
     "zod": "^3.23.8"

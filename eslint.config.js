@@ -6,7 +6,7 @@ export default tseslint.config(
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    ignores: ["**/dist/**", "**/node_modules/**", "apps/web/**", "data/**"]
+    ignores: ["**/dist/**", "**/node_modules/**", "data/**"]
   },
   {
     rules: {

@@ -1,0 +1,144 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f5f6f8;
+  color: #1a1a2e;
+}
+
+.dashboard {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+h2 {
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #555;
+  margin: 0 0 0.75rem;
+}
+
+.card {
+  background: white;
+  border: 1px solid #e2e4e9;
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.load-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+input {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  background: #3b5bfd;
+  color: white;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+button:disabled {
+  background: #9aa5f5;
+  cursor: not-allowed;
+}
+
+label {
+  display: block;
+  font-size: 0.8rem;
+  color: #666;
+  margin-bottom: 0.4rem;
+}
+
+.overall-mastery {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.overall-mastery .value {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.skill-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.skill-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid #f0f0f2;
+}
+
+.skill-row:last-child {
+  border-bottom: none;
+}
+
+.skill-mastery {
+  font-variant-numeric: tabular-nums;
+  color: #444;
+}
+
+.skill-badge.ok {
+  color: #1a9c4b;
+}
+
+.skill-badge.warn {
+  color: #d98c00;
+}
+
+.recommendation {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f0f0f2;
+}
+
+.recommendation p {
+  margin: 0.4rem 0;
+}
+
+.hint {
+  font-style: italic;
+  color: #3b5bfd;
+}
+
+.muted {
+  color: #888;
+}
+
+.small {
+  font-size: 0.85rem;
+}
+
+.error {
+  color: #c0392b;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+}

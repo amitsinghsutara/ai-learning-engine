@@ -2,10 +2,14 @@ import type { DatabaseSync } from "node:sqlite";
 import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
-import { fileURLToPath } from "node:url";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const SCHEMA_PATH = path.resolve(__dirname, "../../../../database/schema.sql");
+// Resolved against the current working directory rather than this file's own
+// location: every documented way of running this project (`npm run dev` via
+// tsx, `npm run start` against the bundled dist/server.js, and the test
+// suite) is invoked with the repo root as cwd. A path derived from this
+// file's directory would break under bundling, since tsup flattens
+// apps/api/src/lib/db.ts into apps/api/dist/server.js at a different depth.
+const SCHEMA_PATH = path.resolve(process.cwd(), "database/schema.sql");
 
 /**
  * `node:sqlite` is loaded through `require` (via `createRequire`) rather than a

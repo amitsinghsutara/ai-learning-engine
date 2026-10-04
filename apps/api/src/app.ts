@@ -1,4 +1,5 @@
 import Fastify, { type FastifyInstance } from "fastify";
+import cors from "@fastify/cors";
 import { ZodError } from "zod";
 import type { DatabaseSync } from "node:sqlite";
 import { ERROR_CODES } from "@ale/shared";
@@ -12,6 +13,7 @@ import { healthRoutes } from "./routes/health.js";
 import { learnerRoutes } from "./routes/learners.js";
 import { eventRoutes } from "./routes/events.js";
 import { analysisRoutes } from "./routes/analysis.js";
+import { ingestRoutes } from "./routes/ingest.js";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -30,6 +32,11 @@ export interface BuildAppOptions {
 
 export function buildApp(options: BuildAppOptions): FastifyInstance {
   const app = Fastify({ logger: options.logger ?? false });
+
+  // Permissive by design for Phase 1: learning-game clients run on their own
+  // dev origin/port and need to call this API directly from the browser.
+  // Tighten this (an explicit allowlist) before any non-local deployment.
+  app.register(cors, { origin: true });
 
   app.decorate("learnerService", new LearnerService(options.db));
   app.decorate("eventService", new EventService(options.db));
@@ -74,6 +81,7 @@ export function buildApp(options: BuildAppOptions): FastifyInstance {
   app.register(learnerRoutes);
   app.register(eventRoutes);
   app.register(analysisRoutes);
+  app.register(ingestRoutes);
 
   return app;
 }
