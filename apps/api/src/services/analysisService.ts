@@ -1,7 +1,15 @@
-import { buildLearnerProfile, buildSkillAnalysisBundle, identifyWeakestSkill } from "@ale/learning-engine";
-import { analyzeLearnerSkill, generatePracticeItems } from "@ale/ai";
-import type { LLMProvider, SkillAnalysisInput } from "@ale/ai";
-import { ERROR_CODES, type Learner, type LearningEvent, type LearningRecommendation, type PracticeSet, type SkillStats } from "@ale/shared";
+import { buildLearnerProfile, buildProgressSummaryBundle, buildSkillAnalysisBundle, identifyWeakestSkill } from "@ale/learning-engine";
+import { analyzeLearnerSkill, generatePracticeItems, generateProgressNarrative } from "@ale/ai";
+import type { LLMProvider, ProgressNarrativeInput, SkillAnalysisInput } from "@ale/ai";
+import {
+  ERROR_CODES,
+  type Learner,
+  type LearningEvent,
+  type LearningRecommendation,
+  type PracticeSet,
+  type ProgressSummary,
+  type SkillStats
+} from "@ale/shared";
 import { AppError } from "../lib/errors.js";
 
 export interface AnalysisResult {
@@ -50,6 +58,61 @@ export class AnalysisService {
       difficulty: analysis.recommendation.difficulty,
       practiceCount: analysis.recommendation.practiceCount
     });
+  }
+
+  /**
+   * Powers the "Child's Progress" screen. Unlike `analyzeLearner`, this never 404s on a
+   * learner with no events yet — a brand new learner (who may request this before their
+   * first event has even synced) gets a friendly, AI-free empty summary instead, matching
+   * the wire contract's documented empty-state behavior for `skills`/`strengths`/`practiceAreas`.
+   */
+  async summarizeProgress(learner: Learner, events: LearningEvent[]): Promise<ProgressSummary> {
+    if (events.length === 0) {
+      return this.buildEmptyProgressSummary(learner.id);
+    }
+
+    const bundle = buildProgressSummaryBundle(events);
+
+    const input: ProgressNarrativeInput = {
+      learnerAge: learner.age,
+      overallMastery: bundle.overallMastery,
+      overallTrend: bundle.overallTrend,
+      skills: bundle.skills.map((skill) => ({ id: skill.id, name: skill.name, mastery: skill.mastery, trend: skill.trend })),
+      strongSkillIds: bundle.strongSkillIds,
+      weakSkillIds: bundle.weakSkillIds
+    };
+
+    const narrative = await generateProgressNarrative(this.provider, input);
+
+    return {
+      learnerId: learner.id,
+      generatedAt: new Date().toISOString(),
+      overall: {
+        mastery: bundle.overallMastery,
+        trend: bundle.overallTrend,
+        summary: narrative.overallSummary
+      },
+      skills: bundle.skills.map((skill) => ({ id: skill.id, name: skill.name, mastery: skill.mastery, trend: skill.trend })),
+      strengths: narrative.strengths,
+      practiceAreas: narrative.practiceAreas,
+      encouragement: narrative.encouragement
+    };
+  }
+
+  private buildEmptyProgressSummary(learnerId: string): ProgressSummary {
+    return {
+      learnerId,
+      generatedAt: new Date().toISOString(),
+      overall: {
+        mastery: 0,
+        trend: "stable",
+        summary: "Your child is just getting started — check back after a few practice sessions to see how things are going."
+      },
+      skills: [],
+      strengths: [],
+      practiceAreas: [],
+      encouragement: "Every practice session helps build confidence — keep it up!"
+    };
   }
 
   private resolveTargetSkill(events: LearningEvent[], requestedSkill?: string): string {

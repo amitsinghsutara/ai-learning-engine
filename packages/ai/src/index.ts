@@ -6,4 +6,5 @@ export * from "./prompts.js";
 export * from "./contentValidation.js";
 export * from "./analyzer.js";
 export * from "./generator.js";
+export * from "./progressNarrator.js";
 export * from "./ollamaClient.js";

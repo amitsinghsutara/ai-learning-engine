@@ -24,3 +24,28 @@ export interface PracticeGenerationInput {
   /** Recent targets to avoid immediate repeats, if known. */
   recentTargets?: string[];
 }
+
+/** One skill's deterministic mastery/trend, as the AI layer is allowed to see it. */
+export interface ProgressSkillInput {
+  id: string;
+  name: string;
+  mastery: number;
+  trend: string;
+}
+
+/**
+ * Narrow, pre-digested input for generating a parent-facing progress narrative. Like
+ * `SkillAnalysisInput`, the AI package only ever receives this — never raw events or
+ * database rows — and the LLM only writes text from it; it never recomputes mastery,
+ * trends, or which skills are strong/weak.
+ */
+export interface ProgressNarrativeInput {
+  learnerAge?: number;
+  overallMastery: number;
+  overallTrend: string;
+  skills: ProgressSkillInput[];
+  /** Skill ids already identified (deterministically) as strengths, strongest first. */
+  strongSkillIds: string[];
+  /** Skill ids already identified (deterministically) as needing practice, weakest first. */
+  weakSkillIds: string[];
+}

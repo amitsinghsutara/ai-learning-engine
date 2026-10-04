@@ -34,3 +34,25 @@ export const practiceSetSchema = z.object({
   focus: z.string().trim().min(1).max(300),
   items: z.array(practiceItemSchema).min(1).max(20)
 });
+
+/**
+ * Schema the LLM's progress-narrative response must satisfy. Deliberately structural only
+ * (shape, types, length bounds) — business rules like "no internal jargon" and "practiceAreas
+ * must reference a real skill id" live in `contentValidation.ts` and filter individual bad
+ * entries rather than failing the whole response.
+ */
+export const progressNarrativeSchema = z.object({
+  overallSummary: z.string().trim().min(1).max(400),
+  strengths: z.array(z.string().trim().min(1).max(200)).max(6),
+  practiceAreas: z
+    .array(
+      z.object({
+        skillId: z.string().trim().min(1).max(100),
+        title: z.string().trim().min(1).max(150),
+        description: z.string().trim().min(1).max(400),
+        suggestion: z.string().trim().min(1).max(400)
+      })
+    )
+    .max(6),
+  encouragement: z.string().trim().min(1).max(400)
+});

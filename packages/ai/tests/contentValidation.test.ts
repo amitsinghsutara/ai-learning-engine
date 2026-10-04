@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { PracticeSet } from "@ale/shared";
-import { filterValidPracticeSet, isValidPracticeItem } from "../src/contentValidation.js";
+import type { PracticeSet, ProgressNarrative } from "@ale/shared";
+import { filterProgressNarrative, filterValidPracticeSet, isValidPracticeItem } from "../src/contentValidation.js";
 
 describe("isValidPracticeItem", () => {
   it("accepts a well-formed item", () => {
@@ -43,5 +43,53 @@ describe("filterValidPracticeSet", () => {
 
     const result = filterValidPracticeSet(candidate);
     expect(result.items).toEqual([{ target: "hat", choices: ["hot", "hat", "hut"] }]);
+  });
+});
+
+describe("filterProgressNarrative", () => {
+  function makeNarrative(overrides: Partial<ProgressNarrative> = {}): ProgressNarrative {
+    return {
+      overallSummary: "Your child is making steady progress.",
+      strengths: ["Initial consonant sounds"],
+      practiceAreas: [
+        {
+          skillId: "short-vowels",
+          title: "Short Vowel Sounds",
+          description: "Short vowel sounds are currently more challenging.",
+          suggestion: "Practice words with short /a/ and /i/ sounds."
+        }
+      ],
+      encouragement: "Keep up the great work.",
+      ...overrides
+    };
+  }
+
+  it("passes through a well-formed narrative unchanged", () => {
+    const narrative = makeNarrative();
+    expect(filterProgressNarrative(narrative, new Set(["short-vowels"]))).toEqual(narrative);
+  });
+
+  it("drops a practiceArea referencing a skill id the deterministic layer never flagged", () => {
+    const narrative = makeNarrative();
+    const result = filterProgressNarrative(narrative, new Set(["initial-sounds"]));
+    expect(result.practiceAreas).toEqual([]);
+  });
+
+  it("drops a strength containing internal jargon", () => {
+    const narrative = makeNarrative({ strengths: ["Good at foil type V", "Initial consonant sounds"] });
+    const result = filterProgressNarrative(narrative, new Set(["short-vowels"]));
+    expect(result.strengths).toEqual(["Initial consonant sounds"]);
+  });
+
+  it("replaces a jargon-containing overallSummary or encouragement with a safe fallback, never emptying them", () => {
+    const narrative = makeNarrative({
+      overallSummary: "Mastery coefficient is low for this skill.",
+      encouragement: "The algorithm suggests more practice."
+    });
+    const result = filterProgressNarrative(narrative, new Set(["short-vowels"]));
+    expect(result.overallSummary).not.toContain("coefficient");
+    expect(result.overallSummary.length).toBeGreaterThan(0);
+    expect(result.encouragement).not.toContain("algorithm");
+    expect(result.encouragement.length).toBeGreaterThan(0);
   });
 });

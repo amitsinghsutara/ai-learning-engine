@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { learningRecommendationSchema, practiceItemSchema } from "../src/schemas.js";
+import { learningRecommendationSchema, practiceItemSchema, progressNarrativeSchema } from "../src/schemas.js";
 
 describe("learningRecommendationSchema", () => {
   const base = {
@@ -43,5 +43,44 @@ describe("practiceItemSchema", () => {
   it("rejects fewer than 2 choices", () => {
     const result = practiceItemSchema.safeParse({ target: "cat", choices: ["cat"] });
     expect(result.success).toBe(false);
+  });
+});
+
+describe("progressNarrativeSchema", () => {
+  const base = {
+    overallSummary: "Your child is making steady progress.",
+    strengths: ["Initial consonant sounds"],
+    practiceAreas: [
+      {
+        skillId: "short-vowels",
+        title: "Short Vowel Sounds",
+        description: "Short vowel sounds are currently more challenging.",
+        suggestion: "Practice words with short /a/ and /i/ sounds."
+      }
+    ],
+    encouragement: "Keep up the great work."
+  };
+
+  it("accepts a well-formed narrative", () => {
+    expect(progressNarrativeSchema.safeParse(base).success).toBe(true);
+  });
+
+  it("accepts empty strengths and practiceAreas arrays", () => {
+    const result = progressNarrativeSchema.safeParse({ ...base, strengths: [], practiceAreas: [] });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects an empty overallSummary", () => {
+    const result = progressNarrativeSchema.safeParse({ ...base, overallSummary: "" });
+    expect(result.success).toBe(false);
+  });
+
+  it("is structural only: it does not enforce that a practiceArea's skillId is a real skill", () => {
+    // That business rule belongs to contentValidation.ts — see progressNarrator.test.ts.
+    const result = progressNarrativeSchema.safeParse({
+      ...base,
+      practiceAreas: [{ ...base.practiceAreas[0], skillId: "made-up-skill" }]
+    });
+    expect(result.success).toBe(true);
   });
 });

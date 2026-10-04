@@ -1,4 +1,4 @@
-import type { DifficultyLevel } from "./constants.js";
+import type { DifficultyLevel, ProgressTrend } from "./constants.js";
 
 /** An anonymous learner. No names, emails, or other identifying data are required. */
 export interface Learner {
@@ -70,4 +70,50 @@ export interface PracticeSet {
   skill: string;
   focus: string;
   items: PracticeItem[];
+}
+
+/** One skill's deterministic mastery/trend, shaped for the "Child's Progress" API response. */
+export interface SkillProgress {
+  id: string;
+  name: string;
+  mastery: number;
+  trend: string;
+}
+
+/** An AI-generated, validated suggestion for a single skill a learner is finding challenging. */
+export interface ProgressPracticeArea {
+  skillId: string;
+  title: string;
+  description: string;
+  suggestion: string;
+}
+
+/**
+ * The AI-generated, Zod-validated parent-facing text for a progress summary. The LLM only
+ * writes this narrative — it never computes mastery, trends, or which skills are strong/weak.
+ */
+export interface ProgressNarrative {
+  overallSummary: string;
+  strengths: string[];
+  practiceAreas: ProgressPracticeArea[];
+  encouragement: string;
+}
+
+/**
+ * The full "Child's Progress" API response: deterministic mastery/trend data plus the
+ * AI-generated narrative, assembled by the API layer. This is the exact wire shape the
+ * reference game client (Forest Spelling Adventure) validates against its own Zod schema.
+ */
+export interface ProgressSummary {
+  learnerId: string;
+  generatedAt: string;
+  overall: {
+    mastery: number;
+    trend: ProgressTrend;
+    summary: string;
+  };
+  skills: SkillProgress[];
+  strengths: string[];
+  practiceAreas: ProgressPracticeArea[];
+  encouragement: string;
 }

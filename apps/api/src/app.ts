@@ -14,6 +14,7 @@ import { learnerRoutes } from "./routes/learners.js";
 import { eventRoutes } from "./routes/events.js";
 import { analysisRoutes } from "./routes/analysis.js";
 import { ingestRoutes } from "./routes/ingest.js";
+import { progressRoutes } from "./routes/progress.js";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -82,6 +83,7 @@ export function buildApp(options: BuildAppOptions): FastifyInstance {
   app.register(eventRoutes);
   app.register(analysisRoutes);
   app.register(ingestRoutes);
+  app.register(progressRoutes);
 
   return app;
 }

@@ -1,4 +1,4 @@
-import type { PracticeItem, PracticeSet } from "@ale/shared";
+import type { PracticeItem, PracticeSet, ProgressNarrative } from "@ale/shared";
 
 /**
  * A word-like token: letters, apostrophes, and hyphens only. This is intentionally
@@ -31,5 +31,54 @@ export function filterValidPracticeSet(candidate: PracticeSet): PracticeSet {
   return {
     ...candidate,
     items: candidate.items.filter(isValidPracticeItem)
+  };
+}
+
+/**
+ * Internal terms that must never reach a parent-facing progress narrative. Checked
+ * case-insensitively as substrings since the LLM may wrap them in surrounding prose.
+ */
+const BANNED_INTERNAL_TERMS = [
+  "foil type",
+  "foiltype",
+  "mastery coefficient",
+  "mastery score",
+  "l1 transfer",
+  "l1-transfer",
+  "algorithm"
+];
+
+const FALLBACK_OVERALL_SUMMARY = "Your child is making progress with regular practice.";
+const FALLBACK_ENCOURAGEMENT =
+  "Keep encouraging short, regular practice sessions — consistency builds confidence.";
+
+function containsBannedTerm(text: string): boolean {
+  const lower = text.toLowerCase();
+  return BANNED_INTERNAL_TERMS.some((term) => lower.includes(term));
+}
+
+/**
+ * Validates and sanitizes a candidate progress narrative before it can reach a parent.
+ * `overallSummary` and `encouragement` are required by the wire contract, so a jargon
+ * violation there is replaced with a safe generic fallback rather than removed; `strengths`
+ * and `practiceAreas` are arrays the contract allows to be empty, so bad entries are simply
+ * dropped. A `practiceArea` referencing a skill id outside `validSkillIds` is also dropped —
+ * the LLM must only write about skills the deterministic layer actually flagged.
+ */
+export function filterProgressNarrative(
+  candidate: ProgressNarrative,
+  validSkillIds: ReadonlySet<string>
+): ProgressNarrative {
+  return {
+    overallSummary: containsBannedTerm(candidate.overallSummary) ? FALLBACK_OVERALL_SUMMARY : candidate.overallSummary,
+    strengths: candidate.strengths.filter((strength) => !containsBannedTerm(strength)),
+    practiceAreas: candidate.practiceAreas.filter(
+      (area) =>
+        validSkillIds.has(area.skillId) &&
+        !containsBannedTerm(area.title) &&
+        !containsBannedTerm(area.description) &&
+        !containsBannedTerm(area.suggestion)
+    ),
+    encouragement: containsBannedTerm(candidate.encouragement) ? FALLBACK_ENCOURAGEMENT : candidate.encouragement
   };
 }

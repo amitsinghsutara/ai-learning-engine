@@ -8,6 +8,11 @@ export type DifficultyLevel = (typeof DIFFICULTY_LEVELS)[number];
  */
 export const RECENT_WINDOW_SIZE = 10;
 
+/** The three overall-trend values the "Child's Progress" API contract allows. */
+export const PROGRESS_TRENDS = ["improving", "stable", "needs-practice"] as const;
+
+export type ProgressTrend = (typeof PROGRESS_TRENDS)[number];
+
 export const ERROR_CODES = {
   VALIDATION_ERROR: "VALIDATION_ERROR",
   LEARNER_NOT_FOUND: "LEARNER_NOT_FOUND",

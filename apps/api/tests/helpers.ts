@@ -20,6 +20,20 @@ export const PRACTICE_FIXTURE = {
   items: [{ target: "cat", choices: ["cat", "cit", "cut", "cot"] }]
 };
 
+export const PROGRESS_NARRATIVE_FIXTURE = {
+  overallSummary: "Your child is making steady progress with spelling and phonics.",
+  strengths: ["Initial consonant sounds", "Final consonant sounds"],
+  practiceAreas: [
+    {
+      skillId: "short-vowels",
+      title: "Short Vowel Sounds",
+      description: "Short vowel sounds are currently more challenging.",
+      suggestion: "Practice words with short /a/ and /i/ sounds."
+    }
+  ],
+  encouragement: "Keep encouraging your child. Regular short practice sessions can help build confidence."
+};
+
 /** A deterministic fake LLMProvider: no Ollama required to run API tests. */
 export class FakeLLMProvider implements LLMProvider {
   async generateText(): Promise<string> {
@@ -32,6 +46,9 @@ export class FakeLLMProvider implements LLMProvider {
 
     const practice = schema.safeParse(PRACTICE_FIXTURE);
     if (practice.success) return practice.data;
+
+    const progress = schema.safeParse(PROGRESS_NARRATIVE_FIXTURE);
+    if (progress.success) return progress.data;
 
     throw new Error("FakeLLMProvider does not know how to satisfy this schema");
   }
