@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "declaration": false,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@ale/shared": ["packages/shared/src/index.ts"],
+      "@ale/shared/*": ["packages/shared/src/*"],
+      "@ale/learning-engine": ["packages/learning-engine/src/index.ts"],
+      "@ale/learning-engine/*": ["packages/learning-engine/src/*"],
+      "@ale/ai": ["packages/ai/src/index.ts"],
+      "@ale/ai/*": ["packages/ai/src/*"]
+    }
+  }
+}

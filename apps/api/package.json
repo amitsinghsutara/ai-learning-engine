@@ -1,0 +1,15 @@
+{
+  "name": "@ale/api",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/server.ts",
+  "dependencies": {
+    "@ale/ai": "*",
+    "@ale/learning-engine": "*",
+    "@ale/shared": "*",
+    "dotenv": "^16.4.5",
+    "fastify": "^5.1.0",
+    "zod": "^3.23.8"
+  }
+}
