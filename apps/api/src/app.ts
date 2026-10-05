@@ -62,6 +62,8 @@ export function buildApp(options: BuildAppOptions): FastifyInstance {
       const statusByCode: Record<string, number> = {
         [ERROR_CODES.OLLAMA_UNAVAILABLE]: 503,
         [ERROR_CODES.OLLAMA_TIMEOUT]: 504,
+        [ERROR_CODES.GEMINI_UNAVAILABLE]: 503,
+        [ERROR_CODES.GEMINI_TIMEOUT]: 504,
         [ERROR_CODES.INVALID_AI_RESPONSE]: 502
       };
       reply

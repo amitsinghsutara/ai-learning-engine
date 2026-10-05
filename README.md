@@ -79,9 +79,12 @@ database rows.
 
 ## 3. Prerequisites
 
-- Node.js 20+ (uses the built-in `node:sqlite` module — no native build step)
+- Node.js 22.5+ (uses the built-in `node:sqlite` module, which isn't present
+  in Node 20 — no native build step otherwise). A `.nvmrc` is included; run
+  `nvm use` if you have nvm installed.
 - npm 10+
-- [Ollama](https://ollama.com) installed and running locally
+- [Ollama](https://ollama.com) installed and running locally (only if using
+  `PROVIDER=ollama` — skip this if you're using Gemini, see section 5b)
 
 ## 4. Ollama Installation
 
@@ -116,6 +119,25 @@ ollama list
 > model's "thinking" trace (`think: false`) to keep responses as fast as
 > possible. If you have a GPU, Ollama will use it automatically and responses
 > will be much faster.
+
+## 5b. Using Gemini instead of Ollama
+
+To use Google's Gemini API instead of a local model (no local install needed,
+but requires an internet connection and a Google account):
+
+1. Get an API key from [Google AI Studio](https://aistudio.google.com/apikey).
+2. In `.env`, set:
+   ```
+   PROVIDER=gemini
+   GEMINI_API_KEY=your-key-here
+   GEMINI_MODEL=gemini-flash-lite-latest
+   ```
+3. Start the API as usual (`npm run dev`) — no Ollama install or `ollama pull`
+   needed in this mode.
+
+`GEMINI_API_KEY` is only required when `PROVIDER=gemini`; `loadEnv` will
+refuse to start otherwise. Switch back to local inference at any time by
+setting `PROVIDER=ollama` (or removing the line, since it's the default).
 
 ## 6. Local Development
 
@@ -161,7 +183,7 @@ default cleared for the one command, e.g. on a POSIX shell:
 | Method | Path | Description |
 |---|---|---|
 | GET | `/health` | Liveness check |
-| GET | `/health/ollama` | Ollama availability + configured model |
+| GET | `/health/ollama` | Configured AI provider's availability + model (name kept for compatibility; reports whichever provider `PROVIDER` selects) |
 | POST | `/learners` | Create an anonymous learner (`{ displayName?, age? }`) |
 | GET | `/learners/:learnerId` | Fetch a learner |
 | GET | `/learners/:learnerId/profile` | Deterministic per-skill mastery breakdown (no AI) |
@@ -211,6 +233,7 @@ All errors follow the same shape and never leak stack traces:
 
 Error codes: `VALIDATION_ERROR` (400), `LEARNER_NOT_FOUND` (404),
 `NO_EVENTS_FOUND` (404), `OLLAMA_UNAVAILABLE` (503), `OLLAMA_TIMEOUT` (504),
+`GEMINI_UNAVAILABLE` (503), `GEMINI_TIMEOUT` (504),
 `INVALID_AI_RESPONSE` (502), `INTERNAL_ERROR` (500).
 
 ## 8. Database Schema
@@ -230,9 +253,10 @@ Migrations are a single idempotent `schema.sql` applied via `npm run db:migrate`
 
 - **`LLMProvider`** (`packages/ai/src/provider.ts`) — the only interface the
   rest of the app depends on: `generateText`, `generateStructured`, and an
-  optional `checkHealth`. `OllamaProvider` is the current implementation; a
-  future cloud or alternative local provider can be added without touching
-  the learning engine or API.
+  optional `checkHealth`. Two implementations exist today — `OllamaProvider`
+  (local, default) and `GeminiProvider` (Google's cloud API) — selected at
+  startup via the `PROVIDER` env var (`ollama` or `gemini`). A future provider
+  can be added without touching the learning engine or API.
 - **Prompts** (`prompts.ts`) are pure functions over pre-digested statistics
   — easy to unit test without a running model.
 - **Structured output**: requests send a JSON Schema (derived from the Zod
